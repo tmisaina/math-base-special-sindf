@@ -4,7 +4,7 @@
 
 <section class="release" id="unreleased">
 
-## Unreleased (2025-08-08)
+## Unreleased (2025-08-09)
 
 <section class="features">
 
@@ -22,6 +22,7 @@
 
 <details>
 
+-   [`0dfa69e`](https://github.com/stdlib-js/stdlib/commit/0dfa69ee7fdc0309bae2b9381cce7230ce69258f) - **docs:** fix descriptions _(by Athan Reines)_
 -   [`696112a`](https://github.com/stdlib-js/stdlib/commit/696112a792072a1369c4e1a8c151f02373972061) - **docs:** fix descriptions _(by Athan Reines)_
 -   [`0a59c83`](https://github.com/stdlib-js/stdlib/commit/0a59c8353dacce2f3b37c9e241ad95565105faf5) - **feat:** add `math/base/special/sindf` [(#7808)](https://github.com/stdlib-js/stdlib/pull/7808) _(by Karan Anand, Philipp Burckhardt)_
 
